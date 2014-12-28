@@ -22,7 +22,7 @@ node[:ebs][:volumes].each do |mount_point, options|
       size options[:size]
       device device
       availability_zone node[:ec2][:placement_availability_zone]
-      volume_type options[:piops] ? 'io1' : 'standard'
+      volume_type options[:volume_type]
       piops options[:piops]
       action :nothing
     end
@@ -52,10 +52,11 @@ node[:ebs][:volumes].each do |mount_point, options|
     mode 0755
   end
 
+  options[:mount_options] ||= 'noatime,nobootwait'
   mount mount_point do
     fstype options[:fstype]
     device device
-    options 'noatime,nobootwait'
+    options options[:mount_options]
     action [:mount, :enable]
   end
 
