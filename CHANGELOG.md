@@ -1,3 +1,10 @@
+## v0.3.6+ rberger / fishnix
+- volumes: actually uses options[:mount_options]
+- volumes: can now specify the volume_type so gp2 can be supported
+-- Made it backwards compatible if you don't specify volume_type and you specify iops it will set options[:volume_type] to io1
+- Updated README to show the changes
+- Added the .gitignore from fishnix
+
 ## v0.3.5
 - Refactored code and added dependency on delayed_evaluator to fix a bug that
   prevented the proper device name from being used which was introduced with the

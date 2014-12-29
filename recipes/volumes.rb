@@ -16,6 +16,10 @@ node[:ebs][:volumes].each do |mount_point, options|
     devid = devices.sort.last[-1,1].succ
     device = "/dev/sd#{devid}"
 
+    if options[:piops] && options[:volume_type].nil?
+      options[:volume_type] = 'io1'
+    end
+
     vol = aws_ebs_volume device do
       aws_access_key credentials[node.ebs.creds.aki]
       aws_secret_access_key credentials[node.ebs.creds.sak]

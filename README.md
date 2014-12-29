@@ -58,9 +58,9 @@ Create a RAID 10 across the volumes specified in the `persistent_volumes` array,
 }
 ```
 
-### EBS Volume Creation
+### EBS Volume Creation using gp2 (basic ssd)
 
-Create a 10GB volume with 1000 provisioned iops, format it with XFS, and mount it on `/data` with `noatime` as an option.
+Create a 10GB volume using the new `gp2` ssd, format it with XFS, and mount it on `/data` with `noatime` as an option.
 
 ```ruby
 {
@@ -68,7 +68,7 @@ Create a 10GB volume with 1000 provisioned iops, format it with XFS, and mount i
     :volumes => {
       '/data' => {
         :size => 10,
-        :piops => 1000,
+        :volume_type => 'gp2',
         :fstype => 'xfs',
         :mount_options => 'noatime'
       }
@@ -77,6 +77,46 @@ Create a 10GB volume with 1000 provisioned iops, format it with XFS, and mount i
 }
 ```
 
+### EBS Volume Creation using standard (standard spining magnets)
+
+Create a 10GB volume using the `standard` magnetic disk, format it with XFS, and mount it on `/data` with `noatime` as an option.
+
+```ruby
+{
+  :ebs => {
+    :volumes => {
+      '/data' => {
+        :size => 10,
+        :volume_type => 'standard',
+        :fstype => 'xfs',
+        :mount_options => 'noatime'
+      }
+    }
+  }
+}
+```
+
+### EBS Volume Creation using provisioned iops ssd
+
+Create a 10GB volume with 1000 provisioned iops, format it with XFS, and mount it on `/data` with `noatime,nobootwait` as an option.
+
+```ruby
+{
+  :ebs => {
+    :volumes => {
+      '/data' => {
+        :size => 10,
+        :volume_type => 'io1',
+        :piops => 1000,
+        :fstype => 'xfs',
+        :mount_options => 'noatime,nobootwait'
+      }
+    }
+  }
+}
+```
+
+`volume_type is optional if you specify `piops` to make it backwards compatible with version 0.3.6 and earlier. May be Depreciated in future so you should specify it
 `mount_options` are optional and will default to `noatime,nobootwait` on all platforms except Amazon linux, where they will default to `noatime`.
 
 ## Credentials
