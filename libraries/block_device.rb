@@ -13,7 +13,7 @@ module BlockDevice
 
   def self.wait_for_logical_volumes
     loop do
-      lvscan = `lvscan`
+      lvscan = Mixlib::ShellOut.new("lvscan").run_command.stdout
       if lvscan.lines.all?{|line| line.include?('ACTIVE')}
         Chef::Log.debug("All LVM volume disks seem to be active:\n#{lvscan}")
         break
@@ -25,7 +25,7 @@ module BlockDevice
   end
 
   def self.existing_raid_at?(device)
-    raids = `mdadm --examine --scan`
+    raids = Mixlib::ShellOut.new("mdadm --examine --scan").run_command.stdout
     if raids.match(device) || raids.match(device.gsub(/md/, "md/"))
       Chef::Log.debug("Checking for existing RAID arrays at #{device}: #{raids}")
       Chef::Log.info("Checking for existing RAID arrays at #{device}: true")
@@ -38,7 +38,7 @@ module BlockDevice
   end
 
   def self.assembled_raid_at?(device)
-    raids = `mdadm --detail --scan`
+    raids = Mixlib::ShellOut.new("mdadm --detail --scan").run_command.stdout
     if raids.match(device) || raids.match(device.gsub(/md/, "md/"))
       Chef::Log.debug("Checking for running RAID arrays at #{device}: #{raids}")
       Chef::Log.info("Checking for running RAID arrays at #{device}: true")
@@ -74,7 +74,7 @@ module BlockDevice
   end
 
   def self.existing_lvm_at?(lvm_device)
-    lvms = `lvscan`
+    lvms = Mixlib::ShellOut.new("lvscan").run_command.stdout
     if lvms.match(lvm_device)
       Chef::Log.debug("Checking for active LVM volumes at #{lvm_device}: #{lvms}")
       Chef::Log.debug("Checking for active LVM volumes at #{lvm_device}: true")
@@ -101,7 +101,7 @@ module BlockDevice
   end
 
   def self.lvm_physical_group_exists?(raid_device)
-    pvscan = `pvscan`
+    pvscan = Mixlib::ShellOut.new("pvscan").run_command.stdout
     if pvscan.match(raid_device)
       Chef::Log.debug("Checking for existing LVM physical disk for #{raid_device}: #{pvscan}")
       Chef::Log.debug("Checking for existing LVM physical disk for #{raid_device}: true")
@@ -114,7 +114,7 @@ module BlockDevice
   end
 
   def self.lvm_volume_group_exists?(raid_device)
-    vgscan = `vgscan`
+    vgscan = Mixlib::ShellOut.new("vgscan").run_command.stdout
     if vgscan.match(lvm_volume_group(raid_device))
       Chef::Log.debug("Checking for existing LVM volume group for #{lvm_volume_group(raid_device)}: #{vgscan}")
       Chef::Log.debug("Checking for existing LVM volume group for #{lvm_volume_group(raid_device)}: true")
@@ -128,7 +128,7 @@ module BlockDevice
 
   def self.lvm_volume_exits?(raid_device)
     wait_for_logical_volumes
-    lvscan = `lvscan`
+    lvscan = Mixlib::ShellOut.new("lvscan").run_command.stdout
     if lvscan.match(lvm_device(raid_device))
       Chef::Log.debug("Checking for existing LVM volume disk for #{lvm_device(raid_device)}: #{lvscan}")
       Chef::Log.debug("Checking for existing LVM volume disk for #{lvm_device(raid_device)}: true")
@@ -142,7 +142,7 @@ module BlockDevice
 
   def self.exec_command(command)
     Chef::Log.debug("Executing: #{command}")
-    output = `#{command} 2>&1`
+    output = Mixlib::ShellOut.new("#{command} 2>&1").run_command.stdout
     if $?.success?
       Chef::Log.info output
       true
@@ -164,6 +164,6 @@ module BlockDevice
   end
 
   def self.on_kvm?
-    `cat /proc/cpuinfo`.match(/QEMU/)
+    Mixlib::ShellOut.new("cat /proc/cpuinfo").run_command.stdout.match(/QEMU/)
   end
 end
